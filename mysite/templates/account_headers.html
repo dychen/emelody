@@ -1,0 +1,13 @@
+<p align="right">
+    {% if is_logged_in %}
+        <a href="/accounts/profile">{{ username }}</a>
+    {% else %}
+        <a href="/accounts/login">Login</a>
+    {% endif %}
+
+    {% if is_logged_in %}
+        <a href="/accounts/logout">Logout</a>
+    {% else %}
+        <a href="/accounts/register">Register</a>
+    {% endif %}
+</p>

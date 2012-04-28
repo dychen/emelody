@@ -1,0 +1,12 @@
+<p>You searched for: <strong>{{ query }}</strong></p>
+
+{% if songs %}
+    <p>Found {{ songs|length }} songs{{ songs|pluralize }}.</p>
+    <ul>
+        {% for song in songs %}
+        <li>{{ song.title }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No songs matched your search criteria.</p>
+{% endif %}

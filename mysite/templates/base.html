@@ -1,0 +1,54 @@
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>eMelody</title>
+        <meta name="keywords" content="" />
+        <meta name="Gestured" content="" />
+        <link href="{% static "gestured/style.css" %}" rel="stylesheet" type="text/css" media="screen" />
+    </head>
+    <body>
+        <div id="wrapper">
+            <!-- start header -->
+            <div id="header">
+                <div id="menu">
+                    <ul id="main">
+                        <li class="current_page_item"><a href="/">Home</a></li>
+                        <li><a href="/">Services</a></li>
+                        <li><a href="/">About Us</a></li>
+                        <li><a href="/">Contact Us</a></li>
+                        {% include 'account_headers.html' %}
+                    </ul>
+                </div>
+                <div id="logo">
+                    <h1 style="font-family:Georgia"><a href="/"><span>eMelody</span></a></h1>
+                    <p>personalize your music experience</p>
+                </div>
+            </div>
+            <!-- end header -->
+            <!-- start page -->
+            <div id="page">
+                <div id="sidebar1" class="sidebar">
+                    {% block left_sidebar %}{% endblock %}
+                </div>
+                <!-- start content -->
+                <div id="content">
+                    {% block content %}{% endblock %}
+                </div>
+                <!-- end content -->
+                <!-- start sidebars -->
+                <div id="sidebar2" class="sidebar">
+                    {% block right_sidebar %}{% endblock %}
+                </div>
+                <!-- end sidebars -->
+                <div style="clear: both;">&nbsp;</div>
+            </div>
+            <!-- end page -->
+        </div>
+        <div id="footer">
+            <p class="copyright">&copy;&nbsp;&nbsp;2009 All Rights Reserved &nbsp;&bull;&nbsp; Design by <a href="http://www.freecsstemplates.org/">Free CSS Templates</a>.</p>
+        </div>
+    </body>
+</html>
