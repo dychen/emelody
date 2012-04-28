@@ -1,17 +1,10 @@
 # Django settings for mysite project.
 
-import socket
-
-if socket.gethostname() == 'Daniels-MacBook-Pro.local':
-    DEBUG = True
-    TEMPLATE_DEBUG = True
-else:
-    DEBUG = False
-    TEMPLATE_DEBUG = False
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
-    ('Daniel Chen', 'dychen@caltech.edu'),
 )
 
 MANAGERS = ADMINS
