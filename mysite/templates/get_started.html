@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="post">
+    <h1 class="title">Get Started</h1>
+    <div class="entry-text">
+        <p><b>First:</b> <a href="/accounts/register">Register</a> on the site and login. <br> 
+        <b>Second:</b> Go to your 
+            {% if is_logged_in %}
+                <a href="/accounts/profile">profile page</a>
+            {% else %}
+                <a href="/accounts/login">profile page</a>
+            {% endif %}
+        , where you can start rating songs. Rate as many as you'd like, but keep in mind that the more songs you rate, the better idea we'll have of your interests, and the more we'll be able to enhance your music listening experience. <br>
+        <b>Third:</b> Explore. Let us recommend songs and artists you might like and make you a customized playlist. Let us find upcomming concerts in your area that you'll enjoy or the best deals on CDs you've never heard of but are sure to love. Let us find other people with the same music tastes as you. The possibilities are endless.<p>
+    </div>
+</div>
+{% endblock %}

@@ -8,6 +8,9 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^$', homepage),
+    (r'^get_started/$', get_started),
+    (r'^about/$', about),
+    (r'^contact/$', contact),
     
     # Account creation and management
     (r'^accounts/login/$', login),

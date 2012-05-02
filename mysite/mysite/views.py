@@ -30,6 +30,36 @@ def homepage(request):
                               'username': username, 
                               'current_date': current_date})
 
+def get_started(request):
+    is_logged_in = request.user.is_authenticated()
+    if is_logged_in:
+        username = request.user.username
+    else:
+        username = None
+    return render_to_response('get_started.html', 
+                              {'is_logged_in': is_logged_in, 
+                              'username': username})
+
+def about(request):
+    is_logged_in = request.user.is_authenticated()
+    if is_logged_in:
+        username = request.user.username
+    else:
+        username = None
+    return render_to_response('about.html', 
+                              {'is_logged_in': is_logged_in, 
+                              'username': username})
+
+def contact(request):
+    is_logged_in = request.user.is_authenticated()
+    if is_logged_in:
+        username = request.user.username
+    else:
+        username = None
+    return render_to_response('contact.html', 
+                              {'is_logged_in': is_logged_in, 
+                              'username': username})
+
 #
 # User Login/Registration Views
 #
