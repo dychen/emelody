@@ -1,0 +1,5 @@
+Set up mailing system
+Update user registration system
+Deploy via Apache/mod_wsgi
+
+
