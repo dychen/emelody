@@ -14,9 +14,10 @@ urlpatterns = patterns('',
     
     # Account creation and management
     (r'^accounts/login/$', login),
-    (r'^accounts/logout/$', logout),
+    (r'^accounts/logout/$', logout_view),
     (r'^accounts/register/$', register),
     (r'^accounts/register/success/$', registration_successful),
+                       #(r'^accounts/', include('registration.urls')),
                        
     # User pages
     (r'^accounts/profile/$', profile),

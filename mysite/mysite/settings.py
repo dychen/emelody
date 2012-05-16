@@ -124,19 +124,31 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-                  #'django.contrib.sites',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
                   
+    # This was downloaded from the internet (django-registration)
+    'registration',
+                  
     'songs',
-                  
-    
-                  
+
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
+
+# Used in the registration app.
+# The number of days a registering user has to activate his account
+# Inactivated accounts remain permanently inactivated and must be deleted by
+# maintenance scripts.
+ACCOUNT_ACTIVATION_DAYS = 7
+EMAIL_HOST = 'localhost'
+DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+LOGIN_REDIRECT_URL = '/accounts/profile/'
+
+
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

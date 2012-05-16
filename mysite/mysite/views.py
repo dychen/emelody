@@ -6,6 +6,7 @@ import urllib
 from django.contrib.auth.decorators import login_required
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import logout
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
@@ -13,7 +14,6 @@ from mysite.forms import ContactForm
 
 from songs.models import Song, Artist, Rating
 
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 
 from django.db.models.loading import get_model
@@ -68,6 +68,23 @@ def contact(request):
 # login
 # logout
 
+def logout_view(request):
+    ratings = Rating.objects.all()
+    
+    path = r"/Users/daniel/emelody/mysite/ratings.txt"
+    
+    f = open(path, 'w')
+    for rating in ratings:
+        user = str(rating.username_id)
+        song = str(rating.song_id)
+        rating = str(rating.rating)
+        f.write(user + ' ' + song + ' ' + rating + '\n')
+    f.close()
+    
+    logout(request)
+    return render_to_response('registration/logged_out.html')
+    # Redirect to a success page.
+
 @csrf_exempt
 def register(request):
     
@@ -82,6 +99,22 @@ def register(request):
 
 def registration_successful(request):
     return render_to_response('registration/success.html')
+
+# Old registration code
+'''@csrf_exempt
+def register(request):
+    
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            new_user = form.save()
+            return HttpResponseRedirect('/accounts/register/success')
+    else:
+        form = UserCreationForm()
+    return render_to_response('registration/register.html', {'form': form})
+
+def registration_successful(request):
+    return render_to_response('registration/success.html')'''
 
 #
 # User Profile/Rating Views
@@ -164,6 +197,31 @@ def profile(request):
                                   'songs': songs,
                                   'ratings': ratings,
                                   'unrated': unrated})
+
+    # Code that handles the randomly rate 200 songs button
+    # Only to be used for testing purposes. Remove this functionality on release.
+    if 'rate_200_random' in request.GET:
+        songs = list(Song.objects.all())
+        for i in range(200):
+            song = random_song(songs)
+            
+            rating = random.randint(1, 5)
+
+            try: 
+                r = Rating.objects.get(username=request.user, song=song)
+            # If he hasn't, make a new rating tuple.
+            except Rating.DoesNotExist:
+                r = Rating(username=request.user, 
+                           song=song, 
+                           rating=rating)
+            # If he has, update the existing rating.
+            else:
+                r.rating = rating
+            r.save()
+
+            songs.remove(song)
+
+        return HttpResponseRedirect('/')
 
     # If there is wasn't search query, just return the normal form.
     return render_to_response('userpages/profile.html', 

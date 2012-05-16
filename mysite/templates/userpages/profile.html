@@ -11,6 +11,7 @@
         <input type="submit" name="random_song" value="Random">
         <input type="submit" name="recommend_song" value="Recommend">
         <input type="submit" name="show_unrated" value="Show Unrated">
+        <input type="submit" name="rate_200_random" value="Randomly Assign 200 Ratings">
     </form>
     {% if queried or unrated %}
         {% if queried %}
@@ -25,7 +26,7 @@
         <p>There are currently no songs in the database.</p>
         {% endif %}
     {% endif %}
-<p>You've rated {{ ratings|length }} song{{ ratings|length|pluralize }}.</p>
+    <p>You've rated {{ ratings|length }} song{{ ratings|length|pluralize }}.</p>
     <p>Click on a song to bring up its rating page.</p>
 
     <!-- Song listing -->
