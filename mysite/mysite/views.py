@@ -12,7 +12,8 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from mysite.forms import ContactForm
 
-from songs.models import Song, Artist, Rating
+from songs.models import Song, Artist, Rating, RecommendedSong
+from django.contrib.auth.models import User
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -69,17 +70,8 @@ def contact(request):
 # logout
 
 def logout_view(request):
-    ratings = Rating.objects.all()
-    
-    path = r"/Users/daniel/emelody/mysite/ratings.txt"
-    
-    f = open(path, 'w')
-    for rating in ratings:
-        user = str(rating.username_id)
-        song = str(rating.song_id)
-        rating = str(rating.rating)
-        f.write(user + ' ' + song + ' ' + rating + '\n')
-    f.close()
+    export_ratings()
+    import_recommended_songs()
     
     logout(request)
     return render_to_response('registration/logged_out.html')
@@ -339,6 +331,56 @@ def get_embedded_link(url):
     video_id = url[start_index:stop_index]
     embedded_url = 'http://www.youtube.com/embed/' + video_id
     return embedded_url
+
+# Exports the rating table to a text file.
+def export_ratings():
+    ratings = Rating.objects.all()
+    path = r"/Users/daniel/emelody/mysite/learning/ratings.txt"
+    
+    f = open(path, 'w')
+    for rating in ratings:
+        user = str(rating.username_id)
+        song = str(rating.song_id)
+        rating = str(rating.rating)
+        f.write(user + ' ' + song + ' ' + rating + '\n')
+    f.close()
+
+# Imports data from a text file to the recommendedsong table.
+def import_recommended_songs():
+    path = r"/Users/daniel/emelody/mysite/learning/recommended_songs.txt"
+    
+    f = open(path, 'r')
+    recommended_songs = []
+    for line in f:
+        # Lines are in the following format:
+        # username_id song_id projected_rating
+        line = line.split(' ')
+        username_id = line[0]
+        song_id = line[1]
+        projected_rating = line[2]
+        recommended_songs.append((artist, song))
+    f.close()
+    
+    # Populate the RecommendedSong table
+    for recommended_song in recommended_songs:
+        username_id = recommended_song[0]
+        song_id = recommended_song[1]
+        predicted_rating = recommended_song[2]
+        try: 
+            username = User.objects.get(id=username_id)
+            song = Song.objects.get(id=song_id)
+            db_recommended_song = RecommendedSong(username=username, 
+                                                  song=song, 
+                                                  predicted_rating=predicted_rating)
+            db_recommended_song.save()
+        except User.DoesNotExist:
+            # This shouldn't happen.
+            return Http404()
+        except Song.DoesNotExist:
+            # This shouldn't happen.
+            return Http404()
+
+    
     
 #
 # Administration Functions

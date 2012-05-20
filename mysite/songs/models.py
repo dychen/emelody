@@ -47,4 +47,24 @@ class Song(models.Model):
 class Rating(models.Model):
     username = models.ForeignKey(User)
     song = models.ForeignKey(Song)
-    rating = models.PositiveIntegerField(blank=True, null=True)
+    rating = models.PositiveIntegerField()
+
+class RecommendedSong(models.Model):
+    username = models.ForeignKey(User)
+    song = models.ForeignKey(Song)
+    predicted_rating = models.DecimalField(max_digits=10, decimal_places=9)
+
+class RecommendedArtist(models.Model):
+    username = models.ForeignKey(User)
+    artist = models.ForeignKey(Artist)
+    count = models.PositiveIntegerField()
+
+class SimilarUser(models.Model):
+    username = models.ForeignKey(User, related_name='original_user')
+    similar_user = models.ForeignKey(User, related_name='similar_user')
+    score = models.DecimalField(max_digits=13, decimal_places=9)
+
+class SimilarSong(models.Model):
+    song = models.ForeignKey(Song, related_name='original_song')
+    similar_song = models.ForeignKey(Song, related_name='similar_song')
+    score = models.DecimalField(max_digits=13, decimal_places=9)
