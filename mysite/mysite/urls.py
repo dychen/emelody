@@ -21,8 +21,13 @@ urlpatterns = patterns('',
                        
     # User pages
     (r'^accounts/profile/$', profile),
-    (r'^rate/(?P<song_id>\d+)/$', rate),
-    (r'^rate/\d+/success/$', rate_successful),
+                       #(r'^rate/(?P<song_id>\d+)/$', rate),
+                       #(r'^rate/\d+/success/$', rate_successful),
+    # Development URLs
+    # Deployment URLs
+    (r'^create_playlist/(?P<song_id>\d+)/$', create_playlist),
+    (r'^create_playlist/\d+/success/$', create_playlist_successful),
+    (r'^listen/(?P<playlist_id>\d+)/$', listen),
                        
     # Administration scripts.
     (r'^admin/updatedb/$', update_db),

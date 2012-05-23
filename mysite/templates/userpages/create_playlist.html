@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="post">
+        <p>You have chosen to create a playlist based on the song {{ song.title }} by {{ song.artist }}.</p>
+            
+        <b>Enter a title for your playlist:</b>
+        {% if errors %}
+        <ul>
+            <p style="color: red;"><b>Errors:</b></p>
+            {% for error in errors %}
+            <p style="color: red;">{{ error }}</p>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <form action="" method="get">
+            <input type="text" name="title" value="" id="title">
+            <input type="submit" name="create_playlist" value="Create">
+        </form>
+
+        <br>
+        <a href="/accounts/profile">Go Back</a>
+        </div>
+    </div>
+{% endblock %}

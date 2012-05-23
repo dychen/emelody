@@ -68,3 +68,8 @@ class SimilarSong(models.Model):
     song = models.ForeignKey(Song, related_name='original_song')
     similar_song = models.ForeignKey(Song, related_name='similar_song')
     score = models.DecimalField(max_digits=13, decimal_places=9)
+
+class Playlist(models.Model):
+    username = models.ForeignKey(User)
+    title = models.CharField(max_length=50)
+    song = models.ForeignKey(Song)

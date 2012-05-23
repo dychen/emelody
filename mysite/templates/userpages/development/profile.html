@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1><p align="center">{{ username }}'s Profile Page</p></h1>
+    <b>Filter Songs:</b>
+    {% include 'userpages/search_form_songs.html' %}
+    <b>Filter Artists:</b>
+    {% include 'userpages/search_form_artists.html' %}
+    <a href="/accounts/profile"><strong>Show All Songs</strong></a>
+    <form action="" method="get">
+        <input type="submit" name="random_song" value="Random">
+        <input type="submit" name="recommend_song" value="Recommend">
+        <input type="submit" name="show_unrated" value="Show Unrated">
+        <input type="submit" name="rate_200_random" value="Randomly Assign 200 Ratings">
+    </form>
+    {% if queried or unrated %}
+        {% if queried %}
+            <p>There are currently {{ songs|length }} songs that match your query.</p>
+        {% else %}
+            <p>There are currently {{ songs|length }} songs that you haven't rated yet.</p>
+        {% endif %}
+    {% else %}
+        {% if songs %}
+        <p>There are currently {{ songs|length }} songs in the database.</p>
+        {% else %}
+        <p>There are currently no songs in the database.</p>
+        {% endif %}
+    {% endif %}
+    <p>You've rated {{ ratings|length }} song{{ ratings|length|pluralize }}.</p>
+    <p>Click on a song to bring up its rating page.</p>
+
+    <!-- Song listing -->
+    {% if queried or songs %}
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Title</th>
+                <th>Artist</th>
+                <th>Rating</th>
+            </tr>
+            {% for song in songs %}
+            <tr>
+                <td><a href="/rate/{{ song.id }}">{{ song.title }}</a></td>
+                <td>{{ song.artist }}</td>
+                <td align="center">
+                {% for rating in ratings %}
+                    {% if rating.song == song %}
+                        {{ rating.rating }}
+                    {% endif %}
+                {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <!-- /Song listing -->
+{% endblock %}

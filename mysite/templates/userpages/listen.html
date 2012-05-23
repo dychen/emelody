@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="post">
+        <h1 class="title" align="center">{{ song.title }}
+            <br><br>
+            {{ song.artist }}
+        </h1>
+        </p>
+        <div class="entry" align="center">
+            <b>
+            Current Rating: 
+            {% for rating in ratings %}
+                {% if rating.song == song %}
+                    {{ rating.rating }}
+                {% else %}
+                {% endif %}
+            {% endfor %}
+            </b>
+            <br><br>
+            <!-- Youtube link -->
+            {% if youtube_link %}
+                <iframe width="420" height="315" src="{{ youtube_link }}" 
+                    frameborder="0" allowfullscreen></iframe>
+            {% else %}
+                <p>No video available</p>
+            {% endif %}
+            <!-- /Youtube link -->
+        <p><b>Rate This Song:</b></p>
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="submit" name="rate_1" value="1">
+            <input type="submit" name="rate_2" value="2">
+            <input type="submit" name="rate_3" value="3">
+            <input type="submit" name="rate_4" value="4">
+            <input type="submit" name="rate_5" value="5">
+        </form>
+        {% if rated %}
+                <p>Song successfully rated!</p>
+        {% endif %}
+
+        <br>
+        <a href="/listen/{{ playlist_id }}">Next Song</a> | 
+        <a href="/accounts/profile">Go Back</a>
+        </div>
+    </div>
+{% endblock %}

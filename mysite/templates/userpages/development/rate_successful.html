@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="post">
+    <h1 class="title">Song successfully rated.</h1>
+    <div class="entry">
+        <a href="/rate/{{ song.id }}/">Next Song</a> | 
+        <a href="/accounts/profile/">Go Back</a>
+        
+    </div>
+</div>
+{% endblock %}

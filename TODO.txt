@@ -2,4 +2,8 @@ Set up mailing system
 Update user registration system
 5/1: Deploy via Apache/mod_wsgi
 
+Delete playlist button
+Rating (development) UI
+Modify registration page to include first/last name
+Repopulate similar_songs table
 
