@@ -12,7 +12,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from mysite.forms import ContactForm
 
-from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist
+from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong
 from django.contrib.auth.models import User
 
 from django.views.decorators.csrf import csrf_exempt
@@ -126,57 +126,33 @@ def profile(request):
         username = request.user.username
     else:
         username = None
-    
-    playlists = Playlist.objects.filter(username=request.user)
+
     songs = Song.objects.all()
-    
-    # Code that handles search filtering
-    # Song search
-    errors = []
-    if 'q_songs' in request.GET or 'q_artists' in request.GET:
-        if 'q_songs' in request.GET:
-            q = request.GET['q_songs']
-        elif 'q_artists' in request.GET:
-            q = request.GET['q_artists']
-        else:
-            raise Exception('Error: Unhandled GET request.')
-        if not q:
-            errors.append('Enter a search term.')
-        # If there were errors in the search query, return them.
-        if len(errors) != 0:
-            return render_to_response('userpages/profile.html',
-                                      {'is_logged_in': is_logged_in,
-                                      'username': username,
-                                      'songs': songs,
-                                      'playlists': playlists,
-                                      'errors': errors})
-        # Otherwise, execute the search query.
-        else:
-            queried = True
-            if 'q_songs' in request.GET:
-                songs = Song.objects.filter(title__icontains=q)
-            elif 'q_artists' in request.GET:
-                songs = Song.objects.filter(artist__name__icontains=q)
-            else:
-                raise Exception('Error: Unhandled GET request.')
-            return render_to_response('userpages/profile.html',
-                                      {'is_logged_in': is_logged_in,
-                                      'username': username,
-                                      'songs': songs,
-                                      'playlists': playlists,
-                                      'query': q,
-                                      'queried': queried})
-    
+    ratings = Rating.objects.filter(username=request.user)
+    num_left = 20 - len(ratings)
+    rate_more = False
+    if num_left > 0:
+        rate_more = True
+
+    # Code that handles the random song button
+    if 'random_song' in request.GET:
+        try:
+            song = random_song_all()
+        except ValueError:
+            return Http404()
+        return HttpResponseRedirect('/rate/'+str(song.id))
 
     # If there is wasn't search query, just return the normal form.
     return render_to_response('userpages/profile.html', 
                               {'is_logged_in': is_logged_in, 
                               'username': username,
                               'songs': songs,
-                              'playlists': playlists})
+                              'ratings': ratings,
+                              'num_left': num_left,
+                              'rate_more': rate_more})
 
 @csrf_exempt
-def create_playlist(request, song_id):
+def rate(request, song_id):
     is_logged_in = request.user.is_authenticated()
     if is_logged_in:
         username = request.user.username
@@ -187,70 +163,20 @@ def create_playlist(request, song_id):
         song = Song.objects.get(id=song_id)
     except ValueError:
         return Http404()
-    
-    errors = []
-    if 'title' in request.GET:
-        q = request.GET['title']
-        if not q:
-            errors.append('Enter a title for your playlist.')
-        try:
-            db_playlist = Playlist.objects.get(username=request.user, song=song)
-            errors.append('You already have a playlist based on this song. Please go back and choose another song.')
-        except Playlist.DoesNotExist:
-            # Do nothing.
-            pass
-            
-        # If there were errors in the form, return them.
-        if len(errors) != 0:
-            return render_to_response('userpages/create_playlist.html',
-                                      {'is_logged_in': is_logged_in,
-                                      'username': username,
-                                      'song': song,
-                                      'errors': errors})
-        # Otherwise, create the playlist.
-        else:
-            db_playlist = Playlist(username=request.user, title=q, song=song)
-            db_playlist.save()
-            return HttpResponseRedirect('success/')
+    ratings = Rating.objects.filter(username=request.user)
+    num_left = 20 - len(ratings)
+    rate_more = False
+    if num_left > 0:
+        rate_more = True
 
-    else:
-        return render_to_response('userpages/create_playlist.html',
-                                  {'is_logged_in': is_logged_in,
-                                  'username': username,
-                                  'song': song})
-
-def create_playlist_successful(request):
-    is_logged_in = request.user.is_authenticated()
-    if is_logged_in:
-        username = request.user.username
-    else:
-        username = None
-    
-    return render_to_response('userpages/create_playlist_successful.html', 
-                              {'is_logged_in': is_logged_in, 
-                              'username': username})
-
-@csrf_exempt
-def listen(request, playlist_id):
-    is_logged_in = request.user.is_authenticated()
-    if is_logged_in:
-        username = request.user.username
-    else:
-        username = None
-    
+    # Loads another random song for "rate next."
+    songs = Song.objects.exclude(rating__username__exact=request.user)
     try:
-        playlist = Playlist.objects.get(id=playlist_id)
-        if request.user != playlist.username:
-            return render_to_response('permission_denied.html')
+        next_song = random_song(songs)
     except ValueError:
         return Http404()
-
-    ratings = Rating.objects.filter(username=request.user)
-    song = playlist.song
-    playlist_songs = SimilarSong.objects.filter(song=song).order_by('score')[:100]
-    playlist_song = random_song(playlist_songs).similar_song
-
-    youtube_link = get_embedded_link(get_video(playlist_song.title, playlist_song.artist.name))
+        
+    youtube_link = get_embedded_link(get_video(song.title, song.artist.name))
     
     rating = 0
     if 'rate_1' in request.POST:
@@ -267,34 +193,31 @@ def listen(request, playlist_id):
     if rating != 0:
         # Check to see if the user has already rated the song.
         try: 
-            r = Rating.objects.get(username=request.user, song=playlist_song)
+            r = Rating.objects.get(username=request.user, song=song)
         # If he hasn't, make a new rating tuple.
         except Rating.DoesNotExist:
             r = Rating(username=request.user, 
-                       song=playlist_song, 
+                       song=song, 
                        rating=rating)
         # If he has, update the existing rating.
         else:
             r.rating = rating
         r.save()
-        rated = True
-        return render_to_response('userpages/listen.html', 
-                                  {'is_logged_in': is_logged_in, 
-                                  'username': username, 
-                                  'song': playlist_song,
-                                  'ratings': ratings,
-                                  'youtube_link': youtube_link,
-                                  'rated': rated,
-                                  'playlist_id': playlist_id})
+        
+        redirect_url = r'/rate/' + str(next_song.id) + r'/'
+        return HttpResponseRedirect(redirect_url)
 
-    else:        
-        return render_to_response('userpages/listen.html', 
+    else:
+
+        return render_to_response('userpages/rate.html', 
                                   {'is_logged_in': is_logged_in, 
                                   'username': username, 
-                                  'song': playlist_song,
+                                  'song': song,
                                   'ratings': ratings,
                                   'youtube_link': youtube_link,
-                                  'playlist_id': playlist_id})
+                                  'next_song': next_song,
+                                  'num_left': num_left,
+                                  'rate_more': rate_more})
 
 #
 # Helper Functions

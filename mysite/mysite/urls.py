@@ -24,6 +24,7 @@ urlpatterns = patterns('',
                        #(r'^rate/(?P<song_id>\d+)/$', rate),
                        #(r'^rate/\d+/success/$', rate_successful),
     # Development URLs
+                       #(r'^rate/(?P<song_id>\d+)/$', rate),
     # Deployment URLs
     (r'^create_playlist/(?P<song_id>\d+)/$', create_playlist),
     (r'^create_playlist/\d+/success/$', create_playlist_successful),

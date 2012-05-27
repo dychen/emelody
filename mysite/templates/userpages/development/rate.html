@@ -8,6 +8,8 @@
         </h1>
         </p>
         <div class="entry" align="center">
+            <p>You've rated {{ ratings|length }} song{{ ratings|length|pluralize }}.<br>
+            {% if rate_more %} Please rate at least {{ num_left }} more. {% endif %}</p>
             <b>
             Current Rating: 
             {% for rating in ratings %}

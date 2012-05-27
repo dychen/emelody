@@ -10,9 +10,9 @@ from django.contrib.auth import logout
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-from mysite.forms import ContactForm
+from mysite.forms import ContactForm, CustomUserCreationForm
 
-from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist
+from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist, Location
 from django.contrib.auth.models import User
 
 from django.views.decorators.csrf import csrf_exempt
@@ -70,7 +70,7 @@ def contact(request):
 # logout
 
 def logout_view(request):
-    calculate_ratings()
+    # calculate_ratings()
     
     # export_ratings()
     # Repopulate the RecommendedSong, SimilarUser, and SimilarSong tables.
@@ -88,12 +88,18 @@ def logout_view(request):
 def register(request):
     
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            print 'test1'
+            state = form.cleaned_data['state']
             new_user = form.save()
+            print 'test4'
+            print state
+            user_location = Location(username=new_user, state=state)
+            user_location.save()
             return HttpResponseRedirect('/accounts/register/success')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render_to_response('registration/register.html', {'form': form})
 
 def registration_successful(request):
@@ -114,6 +120,10 @@ def register(request):
 
 def registration_successful(request):
     return render_to_response('registration/success.html')'''
+
+
+
+
 
 #
 # User Profile/Rating Views
