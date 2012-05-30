@@ -74,6 +74,13 @@ class Playlist(models.Model):
     title = models.CharField(max_length=50)
     song = models.ForeignKey(Song)
 
+class Concert(models.Model):
+    artist = models.ForeignKey(Artist)
+    date = models.DateField()
+    venue = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    url = models.URLField()
+
 class Location(models.Model):
     username = models.ForeignKey(User)
     STATE_CHOICES = (

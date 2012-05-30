@@ -7,7 +7,7 @@ for line in f:
     # Lines are in the following format:
     # Artist - Title.mp3
     line = line.replace('.mp3', '')
-    line = line.split('-')
+    line = line.split(' - ')
     artist = line[0].strip()
     song = line[1].strip()
     songs.append((artist, song))

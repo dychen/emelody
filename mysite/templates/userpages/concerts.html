@@ -1,0 +1,16 @@
+<div>
+    <h2>Concerts:</h2>
+    <!-- Code that handles displaying concerts -->
+    <table border="0" cellpadding="5">
+        <tr>
+            {% for concert in concerts %}
+            <td>
+                <b>{{ concert.artist }}</b> {{ concert.date }}<br>
+                {{ concert.venue }}, {{ concert.location }}<br>
+                <a href={{ concert.url }}>Link</a><br>
+            </td>
+            {% endfor %}
+        </tr>
+    </table>
+    <!-- /Code that handlers displaying concerts -->
+</div>

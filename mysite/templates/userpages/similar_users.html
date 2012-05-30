@@ -1,0 +1,17 @@
+<div>
+    <h2>Similar Users:</h2>
+    <!-- Code that handles displaying similar users -->
+    <table border="0" cellpadding="5">
+        <tr>
+            {% for user, songs in similar_songs.items %}
+            <td>
+                <b>{{ user.similar_user.first_name }} {{ user.similar_user.last_name }} ({{ user.similar_user.username }})'s Top Songs:</b>
+                {% for song in songs %}
+                <li><b>{{ song.song.title }},</b> {{ song.song.artist }}
+                    {% endfor %}
+                    </td>
+            {% endfor %}
+        </tr>
+    </table>
+    <!-- /Code that handles displaying similar users -->
+</div>

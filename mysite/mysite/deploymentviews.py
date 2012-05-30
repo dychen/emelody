@@ -10,14 +10,16 @@ from django.contrib.auth import logout
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-from mysite.forms import ContactForm
+from mysite.forms import ContactForm, CustomUserCreationForm
 
-from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist
+from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist, Location
 from django.contrib.auth.models import User
 
 from django.views.decorators.csrf import csrf_exempt
 
 from django.db.models.loading import get_model
+
+from performances import *
 
 def homepage(request):
     is_logged_in = request.user.is_authenticated()
@@ -80,6 +82,8 @@ def logout_view(request):
     # Repopulate the RecommendedArtist table.
     # calculate_recommended_artists()
     
+    calculate_concerts()
+    
     logout(request)
     return render_to_response('registration/logged_out.html')
     # Redirect to a success page.
@@ -88,12 +92,15 @@ def logout_view(request):
 def register(request):
     
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            state = form.cleaned_data['state']
             new_user = form.save()
+            user_location = Location(username=new_user, state=state)
+            user_location.save()
             return HttpResponseRedirect('/accounts/register/success')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render_to_response('registration/register.html', {'form': form})
 
 def registration_successful(request):
@@ -115,6 +122,10 @@ def register(request):
 def registration_successful(request):
     return render_to_response('registration/success.html')'''
 
+
+
+
+
 #
 # User Profile/Rating Views
 #
@@ -129,6 +140,12 @@ def profile(request):
     
     playlists = Playlist.objects.filter(username=request.user)
     songs = Song.objects.all()
+
+    # Code that handles displaying similar users
+    similar_users = SimilarUser.objects.filter(username=request.user).order_by('score')[:5]
+    similar_songs = {}
+    for similar_user in similar_users:
+        similar_songs[similar_user] = RecommendedSong.objects.filter(username=similar_user.username).order_by('-predicted_rating')[:5]
     
     # Code that handles search filtering
     # Song search
@@ -149,7 +166,8 @@ def profile(request):
                                       'username': username,
                                       'songs': songs,
                                       'playlists': playlists,
-                                      'errors': errors})
+                                      'errors': errors,
+                                      'similar_songs': similar_songs})
         # Otherwise, execute the search query.
         else:
             queried = True
@@ -165,7 +183,8 @@ def profile(request):
                                       'songs': songs,
                                       'playlists': playlists,
                                       'query': q,
-                                      'queried': queried})
+                                      'queried': queried,
+                                      'similar_songs': similar_songs})
     
 
     # If there is wasn't search query, just return the normal form.
@@ -173,7 +192,8 @@ def profile(request):
                               {'is_logged_in': is_logged_in, 
                               'username': username,
                               'songs': songs,
-                              'playlists': playlists})
+                              'playlists': playlists,
+                              'similar_songs': similar_songs})
 
 @csrf_exempt
 def create_playlist(request, song_id):
@@ -487,7 +507,22 @@ def calculate_ratings():
     path = r"/Users/daniel/emelody/mysite/learning/transform.py"
     execfile(path)
     
-    
+# Populates the concert table.
+def calculate_concerts():
+    for user in User.objects.all():
+        artists = list(Artist.objects.filter(recommendedartist__username=user))
+        location = Location.objects.get(username=user)
+        concerts = getconcerts(artists, location)
+        for concert in concerts:
+            artist = concert[0]
+            date = concert[1]
+            venue = concert[2]
+            location = concert[3]
+            url = concert[4]
+            new_concert = Concert(username=user, artist=artist, date=date, venue=venue, location=location, url=url)
+            new_concert.save()
+
+
 #
 # Administration Functions
 #
@@ -538,3 +573,5 @@ def upload_songs():
                 db_song.save()
         except Artist.DoesNotExist:
             continue
+
+

@@ -9,7 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import logout
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from mysite.forms import ContactForm
 
 from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong
@@ -70,15 +70,15 @@ def contact(request):
 # logout
 
 def logout_view(request):
-    calculate_ratings()
+    # calculate_ratings()
     
     # export_ratings()
     # Repopulate the RecommendedSong, SimilarUser, and SimilarSong tables.
-    # import_recommended_songs()
-    # import_similar_users()
-    # import_similar_songs()
+    import_recommended_songs()
+    import_similar_users()
+    import_similar_songs()
     # Repopulate the RecommendedArtist table.
-    # calculate_recommended_artists()
+    calculate_recommended_artists()
     
     logout(request)
     return render_to_response('registration/logged_out.html')
@@ -221,6 +221,26 @@ def profile(request):
 
         return HttpResponseRedirect('/')
 
+    # Code that handles the randomly rate all songs button
+    # Only to be used for testing purposes. Remove this functionality on release.
+    if 'rate_all_random' in request.GET:
+        songs = Song.objects.all()
+        for song in songs:
+            rating = random.randint(1, 5)
+
+            try: 
+                r = Rating.objects.get(username=request.user, song=song)
+            # If he hasn't, make a new rating tuple.
+            except Rating.DoesNotExist:
+                r = Rating(username=request.user, 
+                           song=song, 
+                           rating=rating)
+            # If he has, update the existing rating.
+            else:
+                r.rating = rating
+            r.save()
+        return HttpResponseRedirect('/')
+
     # If there is wasn't search query, just return the normal form.
     return render_to_response('userpages/profile.html', 
                               {'is_logged_in': is_logged_in, 
@@ -340,7 +360,6 @@ def get_embedded_link(url):
 
 # UNUSED
 # Exports the rating table to a text file.
-'''
 def export_ratings():
     ratings = Rating.objects.all()
     path = r"/Users/daniel/emelody/mysite/learning/ratings.txt"
@@ -352,7 +371,6 @@ def export_ratings():
         rating = str(rating.rating)
         f.write(user + ' ' + song + ' ' + rating + '\n')
     f.close()
-'''
 
 # Imports data from a text file to the recommendedsong table.
 def import_recommended_songs():
@@ -363,7 +381,7 @@ def import_recommended_songs():
     for line in f:
         # Lines are in the following format:
         # username_id song_id projected_rating
-        line = line.split(' ')
+        line = line.rstrip().split(' ')
         username_id = line[0]
         song_id = line[1]
         projected_rating = line[2]
@@ -404,7 +422,7 @@ def import_similar_users():
     for line in f:
         # Lines are in the following format:
         # song_id other_song_id score
-        line = line.split(' ')
+        line = line.rstrip().split(' ')
         username_id = line[0]
         other_username_id = line[1]
         score = line[2]
@@ -442,7 +460,7 @@ def import_similar_songs():
     for line in f:
         # Lines are in the following format:
         # song_id other_song_id score
-        line = line.split(' ')
+        line = line.rstrip().split(' ')
         song_id = line[0]
         other_song_id = line[1]
         score = line[2]
