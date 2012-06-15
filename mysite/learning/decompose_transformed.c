@@ -3,9 +3,9 @@
 #include <cmath>
 using namespace std;
 
-const int datatotal = 1964;
-const int utotal = 4;
-const int mtotal = 491;
+const int datatotal = 1404;
+const int utotal = 19;
+const int mtotal = 501;
 const int featuretotal = 10;
 const int cycletotal = 150;
 float learning = 0.001;

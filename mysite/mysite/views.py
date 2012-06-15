@@ -9,7 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import logout
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from mysite.forms import ContactForm, CustomUserCreationForm
 
 from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist, Location, Concert
@@ -72,9 +72,10 @@ def contact(request):
 # logout
 
 def logout_view(request):
-    calculate_ratings()
-    
     # export_ratings()
+    
+    # calculate_ratings()
+    
     # Repopulate the RecommendedSong, SimilarUser, and SimilarSong tables.
     # import_recommended_songs()
     # import_similar_users()
@@ -143,13 +144,13 @@ def profile(request):
     songs = Song.objects.all()
 
     # Code that handles displaying similar users
-    similar_users = SimilarUser.objects.filter(username=request.user).order_by('score')[:5]
+    similar_users = SimilarUser.objects.filter(username=request.user).order_by('score')[:4]
     similar_songs = {}
     for similar_user in similar_users:
         similar_songs[similar_user] = RecommendedSong.objects.filter(username=similar_user.similar_user).order_by('-predicted_rating')[:5]
 
     # Code that handles displaying nearby concerts
-    top_artists = RecommendedArtist.objects.filter(username=request.user).order_by('count')[:40]
+    top_artists = RecommendedArtist.objects.filter(username=request.user).order_by('count')[:10]
     concerts = []
     for top_artist in top_artists:
         print top_artist.artist.name
@@ -370,9 +371,7 @@ def get_embedded_link(url):
     embedded_url = 'http://www.youtube.com/embed/' + video_id
     return embedded_url
 
-# UNUSED
 # Exports the rating table to a text file.
-'''
 def export_ratings():
     ratings = Rating.objects.all()
     path = r"/Users/daniel/emelody/mysite/learning/ratings.txt"
@@ -384,7 +383,6 @@ def export_ratings():
         rating = str(rating.rating)
         f.write(user + ' ' + song + ' ' + rating + '\n')
     f.close()
-'''
 
 # Imports data from a text file to the recommendedsong table.
 def import_recommended_songs():

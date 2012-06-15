@@ -74,11 +74,11 @@ def logout_view(request):
     
     # export_ratings()
     # Repopulate the RecommendedSong, SimilarUser, and SimilarSong tables.
-    import_recommended_songs()
-    import_similar_users()
-    import_similar_songs()
+    # import_recommended_songs()
+    # import_similar_users()
+    # import_similar_songs()
     # Repopulate the RecommendedArtist table.
-    calculate_recommended_artists()
+    # calculate_recommended_artists()
     
     logout(request)
     return render_to_response('registration/logged_out.html')

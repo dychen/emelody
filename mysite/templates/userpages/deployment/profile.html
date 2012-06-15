@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div id="page">
+    <div id="content" class="post">
+
     <h1><p align="center">{{ username }}'s Profile Page</p></h1>
 
     <b>Create Playlist:</b>
@@ -33,4 +36,10 @@
             <a href="/listen/{{ playlist.id }}/">{{ playlist.title }}</a>, based on {{ playlist.song.title }} by {{ playlist.song.artist.name }}<br>
         {% endfor %}
     {% endif %}
+    <div class="post"></div><br>
+    {% include 'userpages/similar_users.html' %}
+    <div class="post"></div><br>
+    {% include 'userpages/concerts.html' %}
+    </div>
+</div>
 {% endblock %}

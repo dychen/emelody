@@ -9,15 +9,17 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import logout
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
-from mysite.forms import ContactForm
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from mysite.forms import ContactForm, CustomUserCreationForm
 
-from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong
+from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist, Location, Concert
 from django.contrib.auth.models import User
 
 from django.views.decorators.csrf import csrf_exempt
 
 from django.db.models.loading import get_model
+
+from performances import *
 
 def homepage(request):
     is_logged_in = request.user.is_authenticated()
@@ -72,13 +74,13 @@ def contact(request):
 def logout_view(request):
     calculate_ratings()
     
-    # export_ratings()
+    export_ratings()
     # Repopulate the RecommendedSong, SimilarUser, and SimilarSong tables.
-    # import_recommended_songs()
-    # import_similar_users()
-    # import_similar_songs()
+    import_recommended_songs()
+    import_similar_users()
+    import_similar_songs()
     # Repopulate the RecommendedArtist table.
-    # calculate_recommended_artists()
+    calculate_recommended_artists()
     
     logout(request)
     return render_to_response('registration/logged_out.html')
@@ -88,12 +90,15 @@ def logout_view(request):
 def register(request):
     
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            state = form.cleaned_data['state']
             new_user = form.save()
+            user_location = Location(username=new_user, state=state)
+            user_location.save()
             return HttpResponseRedirect('/accounts/register/success')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render_to_response('registration/register.html', {'form': form})
 
 def registration_successful(request):
@@ -253,9 +258,7 @@ def get_embedded_link(url):
     embedded_url = 'http://www.youtube.com/embed/' + video_id
     return embedded_url
 
-# UNUSED
 # Exports the rating table to a text file.
-'''
 def export_ratings():
     ratings = Rating.objects.all()
     path = r"/Users/daniel/emelody/mysite/learning/ratings.txt"
@@ -267,7 +270,6 @@ def export_ratings():
         rating = str(rating.rating)
         f.write(user + ' ' + song + ' ' + rating + '\n')
     f.close()
-'''
 
 # Imports data from a text file to the recommendedsong table.
 def import_recommended_songs():

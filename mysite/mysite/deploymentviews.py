@@ -12,7 +12,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from mysite.forms import ContactForm, CustomUserCreationForm
 
-from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist, Location
+from songs.models import Song, Artist, Rating, RecommendedSong, RecommendedArtist, SimilarUser, SimilarSong, Playlist, Location, Concert
 from django.contrib.auth.models import User
 
 from django.views.decorators.csrf import csrf_exempt
@@ -82,7 +82,8 @@ def logout_view(request):
     # Repopulate the RecommendedArtist table.
     # calculate_recommended_artists()
     
-    calculate_concerts()
+    # Populate the Concerts table.
+    # calculate_concerts()
     
     logout(request)
     return render_to_response('registration/logged_out.html')
@@ -145,7 +146,23 @@ def profile(request):
     similar_users = SimilarUser.objects.filter(username=request.user).order_by('score')[:5]
     similar_songs = {}
     for similar_user in similar_users:
-        similar_songs[similar_user] = RecommendedSong.objects.filter(username=similar_user.username).order_by('-predicted_rating')[:5]
+        similar_songs[similar_user] = RecommendedSong.objects.filter(username=similar_user.similar_user).order_by('-predicted_rating')[:5]
+
+    # Code that handles displaying nearby concerts
+    top_artists = RecommendedArtist.objects.filter(username=request.user).order_by('count')[:40]
+    concerts = []
+    for top_artist in top_artists:
+        print top_artist.artist.name
+        try:
+            concert = Concert.objects.filter(artist=top_artist.artist)
+            for c in concert:
+                concerts.append(c)
+        except Concert.DoesNotExist:
+            continue
+    print concerts
+    
+
+
     
     # Code that handles search filtering
     # Song search
@@ -167,7 +184,8 @@ def profile(request):
                                       'songs': songs,
                                       'playlists': playlists,
                                       'errors': errors,
-                                      'similar_songs': similar_songs})
+                                      'similar_songs': similar_songs,
+                                      'concerts': concerts})
         # Otherwise, execute the search query.
         else:
             queried = True
@@ -184,7 +202,8 @@ def profile(request):
                                       'playlists': playlists,
                                       'query': q,
                                       'queried': queried,
-                                      'similar_songs': similar_songs})
+                                      'similar_songs': similar_songs,
+                                      'concerts': concerts})
     
 
     # If there is wasn't search query, just return the normal form.
@@ -193,7 +212,8 @@ def profile(request):
                               'username': username,
                               'songs': songs,
                               'playlists': playlists,
-                              'similar_songs': similar_songs})
+                              'similar_songs': similar_songs,
+                              'concerts': concerts})
 
 @csrf_exempt
 def create_playlist(request, song_id):
@@ -509,18 +529,31 @@ def calculate_ratings():
     
 # Populates the concert table.
 def calculate_concerts():
-    for user in User.objects.all():
-        artists = list(Artist.objects.filter(recommendedartist__username=user))
-        location = Location.objects.get(username=user)
-        concerts = getconcerts(artists, location)
-        for concert in concerts:
-            artist = concert[0]
-            date = concert[1]
+    artists = list(Artist.objects.all().values('name'))
+    artists_clean = []
+    for artist in artists:
+        artists_clean.append(artist['name'])
+    #location = Location.objects.get(username=user).state
+    concerts = []
+    for artist_clean in artists_clean:
+        found_concert = getconcerts(artist_clean)
+        # Make sure concerts isn't empty
+        if found_concert != []:
+            concerts.append(getconcerts(artist_clean))
+    for concert in concerts:
+        try:
+            artist = Artist.objects.get(name=concert[0])
+            date = concert[1].split('/')
+            date = date[2] + '-' + date[0] + '-' + date[1]
             venue = concert[2]
             location = concert[3]
             url = concert[4]
-            new_concert = Concert(username=user, artist=artist, date=date, venue=venue, location=location, url=url)
+            new_concert = Concert(artist=artist, date=date, venue=venue, location=location, url=url)
             new_concert.save()
+        except Artist.DoesNotExist:
+            continue
+
+        
 
 
 #
@@ -528,7 +561,8 @@ def calculate_concerts():
 #
 
 def update_db(request):
-    if request.user.is_authenticated() and request.user.is_superuser:
+    if request.user.is_authenticated():
+        #and request.user.is_superuser:
         upload_songs()
         return render_to_response('admin/db_update_successful.html')
     else:
@@ -544,7 +578,7 @@ def upload_songs():
         # Lines are in the following format:
         # Artist - Title.mp3
         line = line.replace('.mp3', '')
-        line = line.split('-')
+        line = line.split(' - ')
         artist = line[0].strip()
         song = line[1].strip()
         songs.append((artist, song))
